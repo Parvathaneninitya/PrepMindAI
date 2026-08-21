@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrepMind AI | Real-Time AI Technical Interviewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* Theme & Variables */
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(22, 30, 49, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-cyan: #38bdf8;
+      --accent-purple: #818cf8;
+      --gradient-primary: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #fb7185;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Ambient Glows */
+    .glow-bg {
+      position: fixed;
+      top: -100px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(0,0,0,0) 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .glow-bg-2 {
+      position: fixed;
+      bottom: -100px;
+      right: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.1) 0%, rgba(0,0,0,0) 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Header Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 1000;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 75px;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 1.4rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--accent-cyan);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.8rem 1.6rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 0.95rem;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(56, 189, 248, 0.4);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--accent-cyan);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 6rem 0 4rem;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 0.9rem;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent-cyan);
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      letter-spacing: -1px;
+    }
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* AI Avatar Preview Frame */
+    .interviewer-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+    .avatar-frame {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      padding: 4px;
+      margin: 0 auto 1.25rem;
+    }
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+    }
+
+    /* Sections */
+    section {
+      padding: 5rem 0;
+    }
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .section-subtitle {
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 3.5rem;
+      font-size: 1.05rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Pricing Section Styles */
+    .pricing-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .pricing-card.featured {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+    }
+    .price-tag {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 1rem 0;
+      color: var(--accent-cyan);
+    }
+    .price-list {
+      list-style: none;
+      margin-bottom: 2rem;
+      flex-grow: 1;
+    }
+    .price-list li {
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+    .price-list li::before {
+      content: "✔ ";
+      color: var(--accent-cyan);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(9, 13, 22, 0.92);
+      backdrop-filter: blur(16px);
+      z-index: 2000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+    .modal-content {
+      background: #0f172a;
+      border: 1px solid var(--accent-cyan);
+      border-radius: 20px;
+      max-width: 780px;
+      width: 100%;
+      padding: 2.5rem;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
+      font-size: 1.75rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.85rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    textarea.code-editor {
+      font-family: 'Fira Code', monospace;
+      height: 140px;
+      background: #090d16;
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+    }
+
+    /* Live Chat Room UI */
+    .chat-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 1.25rem;
+    }
+    .message {
+      margin-bottom: 1rem;
+      padding: 0.85rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+    .message.ai {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid var(--accent-cyan);
+    }
+    .message.user {
+      background: rgba(129, 140, 248, 0.08);
+      border-left: 4px solid var(--accent-purple);
+      margin-left: 1.5rem;
+    }
+
+    .voice-pulse {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 0 rgba(56, 189, 248, 0.4);
+      animation: pulse 1.5s infinite;
+      margin-right: 6px;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+
+    .decision-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.8rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 3rem 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg"></div>
+  <div class="glow-bg-2"></div>
+
+  <!-- Navigation -->
+  <header>
+    <div class="container">
+      <nav>
+        <a href="#" class="logo">PrepMind.AI</a>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">Interview Stages</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+        <button onclick="openSetupModal('Free Starter')" class="btn btn-primary">Start AI Interview</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="container">
+    <section class="hero">
+      <div>
+        <span class="badge">Adaptive AI Technical Interviewer</span>
+        <h1>Practice Real Technical Interviews with <span class="gradient-text">Interactive AI Voice & Code Assessment</span></h1>
+        <p class="hero-p">
+          Experience an authentic multi-stage technical interview. Get asked intro questions, core computer science concepts, live coding challenges, and system design scenarios.
+        </p>
+        <div style="display: flex; gap: 1rem;">
+          <button onclick="openSetupModal('Free Starter')" class="btn btn-primary">Launch Live AI Session 🎙️</button>
+          <a href="#how-it-works" class="btn btn-secondary">Explore Interview Stages</a>
+        </div>
+      </div>
+
+      <!-- Live Interviewer Showcase Card -->
+      <div class="interviewer-card">
+        <div class="avatar-frame">
+          <div class="avatar-img">🤖</div>
+        </div>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.3rem;">AI Senior Technical Interviewer</h3>
+        <p style="color: var(--accent-cyan); font-weight: 600; font-size: 0.85rem; margin-bottom: 1rem;"><span class="voice-pulse"></span>Voice Synthesis Active</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          "Hello candidate! I will evaluate your answers in real time. If an answer is incorrect or lacks detail, I will ask you to retry before issuing your final assessment."
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <h2 class="section-title">End-to-End Interview Readiness</h2>
+      <p class="section-subtitle">Trained on previous technical interview rounds from top software companies.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">👋</div>
+          <h3>1. Intro & Profile Check</h3>
+          <p>Begins with candidate introductions, background queries, and project deep-dives based on your target stack.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>2. Core Fundamentals</h3>
+          <p>Questions targeted directly at Data Structures, Algorithms, OOPs concepts, Java, and Python.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">💻</div>
+          <h3>3. Live Code Sandbox</h3>
+          <p>Solves real algorithmic problems in an interactive code box while the AI analyzes logic and time complexity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interview Stages -->
+  <section id="how-it-works" style="background: rgba(255,255,255,0.01);">
+    <div class="container">
+      <h2 class="section-title">The 4-Stage AI Interview Process</h2>
+      <p class="section-subtitle">Simulates real software engineering recruitment rounds.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>Stage 1: Introduction & HR</h3>
+          <p>Introduce yourself, discuss past projects, and articulate your technical strengths.</p>
+        </div>
+        <div class="card">
+          <h3>Stage 2: Technical Knowledge</h3>
+          <p>Core questions on memory management, async programming, and database design.</p>
+        </div>
+        <div class="card">
+          <h3>Stage 3: Algorithmic Challenge</h3>
+          <p>Write clean code to solve a data structure or logic problem in the built-in sandbox.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing">
+    <div class="container">
+      <h2 class="section-title">Simple, Transparent Pricing</h2>
+      <p class="section-subtitle">Start practicing for free today. Upgrade anytime for unlimited interviews.</p>
+
+      <div class="grid-3">
+        <div class="card pricing-card">
+          <h3>Starter Plan</h3>
+          <p>Perfect for quick mock tests.</p>
+          <div class="price-tag">₹0</div>
+          <ul class="price-list">
+            <li>2 Full AI Voice Mock Tests / Mo</li>
+            <li>Basic Technical Feedback</li>
+            <li>Core Roles Supported</li>
+          </ul>
+          <button onclick="openSetupModal('Starter Free')" class="btn btn-secondary" style="width: 100%;">Get Started Free</button>
+        </div>
+
+        <div class="card pricing-card featured">
+          <span class="badge" style="position: absolute; top: 1rem; right: 1rem;">Most Popular</span>
+          <h3>Pro Developer</h3>
+          <p>For serious job seekers.</p>
+          <div class="price-tag">₹499<span style="font-size: 1rem; color: var(--text-muted);">/mo</span></div>
+          <ul class="price-list">
+            <li>Unlimited AI Voice Interviews</li>
+            <li>System Design & DSA Code Evaluator</li>
+            <li>Voice Pitch & Speech Metrics</li>
+            <li>Downloadable Performance PDF</li>
+          </ul>
+          <button onclick="openSetupModal('Pro Developer')" class="btn btn-primary" style="width: 100%;">Select Pro Plan</button>
+        </div>
+
+        <div class="card pricing-card">
+          <h3>Campus Pack</h3>
+          <p>For colleges & training institutes.</p>
+          <div class="price-tag">Custom</div>
+          <ul class="price-list">
+            <li>Bulk Student Dashboard</li>
+            <li>Custom Placement Drive Question Sets</li>
+            <li>Institutional Performance Analytics</li>
+          </ul>
+          <button onclick="openSetupModal('Campus Pack')" class="btn btn-secondary" style="width: 100%;">Select Campus Plan</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 1: CANDIDATE REGISTRATION MODAL -->
+  <div class="modal-overlay" id="setup-modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('setup-modal')">&times;</span>
+      
+      <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; text-align: center;">Candidate Setup</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center;">Selected Plan: <strong id="selected-plan-display" style="color: var(--accent-cyan);">Starter Free</strong></p>
+
+      <form id="setup-form" onsubmit="startInterviewSession(event)">
+        <div class="form-group">
+          <label for="c-name">Full Name</label>
+          <input type="text" id="c-name" required placeholder="e.g. Parvataneni Nitya Santhoshi" />
+        </div>
+
+        <div class="form-group">
+          <label for="c-email">Email Address</label>
+          <input type="email" id="c-email" required placeholder="e.g. nityasanthoshi99@gmail.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="c-role">Target Role</label>
+          <select id="c-role" required>
+            <option value="Full Stack Developer (Java & JS)">Full Stack Developer (Java, React, SQL)</option>
+            <option value="Java Backend Engineer">Java Backend Specialist (Spring Boot, Multithreading)</option>
+            <option value="Python & AI Engineer">Python & AI Engineer (Data Structures, ML, APIs)</option>
+            <option value="Frontend Engineer">Frontend Engineer (JavaScript ES6+, Modern UI)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="c-projects">Key Projects / Bio (Brief summary)</label>
+          <textarea id="c-projects" rows="3" placeholder="e.g. Developed NotiFly event reminder system and Semester Vault CGPA engine during B.Tech at SVECW..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Enter AI Interview Room 🎙️</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- STEP 2: INTERACTIVE AI INTERVIEW ROOM -->
+  <div class="modal-overlay" id="interview-modal">
+    <div class="modal-content" style="max-width: 820px;">
+      <span class="modal-close" onclick="closeModal('interview-modal')">&times;</span>
+      
+      <div id="session-workspace">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <span class="badge" id="stage-badge">Stage 1: HR & Intro</span>
+          <span style="color: var(--accent-cyan); font-weight: 700;"><span class="voice-pulse"></span>AI Interviewer Live</span>
+        </div>
+
+        <div class="chat-box" id="chat-history">
+          <!-- Live conversation messages append here -->
+        </div>
+
+        <div id="input-container">
+          <div id="text-input-wrapper">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <label style="font-weight: 600; font-size: 0.85rem;">Your Response:</label>
+              <button type="button" id="mic-btn" onclick="toggleMic()" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-color: var(--accent-cyan);">🎙️ Speak Response</button>
+            </div>
+            <textarea id="candidate-reply" placeholder="Type or speak your answer clearly..."></textarea>
+          </div>
+
+          <div id="code-input-wrapper" style="display: none;">
+            <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">Code Sandbox Solution:</label>
+            <textarea id="candidate-code" class="code-editor" placeholder="// Write your solution function here..."></textarea>
+          </div>
+
+          <p id="mic-status" style="font-size: 0.8rem; color: var(--accent-cyan); margin: 0.4rem 0; min-height: 1.2rem;"></p>
+
+          <div id="standard-actions">
+            <button onclick="submitCandidateResponse()" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Submit Answer for AI Analysis ➔</button>
+          </div>
+
+          <div id="decision-actions" class="decision-buttons" style="display: none;">
+            <button onclick="retryCurrentQuestion()" class="btn btn-secondary" style="flex: 1; border-color: var(--warning); color: var(--warning);">🔄 Try Answer Again</button>
+            <button onclick="proceedToNextStage()" class="btn btn-primary" style="flex: 1;">Proceed to Next Stage ➔</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINAL EVALUATION SCORECARD SCREEN -->
+      <div id="evaluation-workspace" style="display: none; text-align: center;">
+        <h2 style="font-size: 2rem; color: var(--success); margin-bottom: 0.5rem;">🎉 Interview Completed!</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;" id="eval-candidate-name">Official AI Assessment Report</p>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 3rem; color: var(--accent-cyan);" id="overall-score">0 / 100</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Recommendation: <strong id="hire-verdict">Evaluating...</strong></p>
+        </div>
+
+        <div style="text-align: left; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 10px; font-size: 0.95rem; margin-bottom: 1.5rem;">
+          <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">AI Real-Time Evaluation Breakdown:</h4>
+          <div id="eval-breakdown-list">
+            <!-- Dynamic feedback items generated here -->
+          </div>
+        </div>
+
+        <button onclick="closeModal('interview-modal')" class="btn btn-primary" style="width: 100%;">Save Assessment Scorecard</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2026 PrepMind AI. Built by Parvataneni Nitya Santhoshi | ShadowFox Web Development Task.</p>
+    </div>
+  </footer>
+
+  <script>
+    let candidate = { name: "", email: "", role: "", projects: "", plan: "Starter Free" };
+    let currentStage = 0;
+    let recognition;
+    let isListening = false;
+
+    let stageScores = [0, 0, 0, 0];
+    let stageFeedbacks = ["", "", "", ""];
+    let attemptCounts = [1, 1, 1, 1];
+
+    const questionBank = {
+      stage1: [
+        (c) => `Hello ${c.name}! Welcome to your technical interview for the ${c.role} role. To start, please introduce yourself, mention your academic background, and walk me through your key projects (e.g. ${c.projects || 'your top technical projects'}).`,
+        (c) => `Welcome ${c.name}! Let's begin the ${c.role} interview. Give me a brief introduction about yourself and explain what motivated you to specialize in software engineering.`
+      ],
+      stage2: [
+        {
+          q: "Can you explain the difference between Heap and Stack memory in Java/C++, and how Garbage Collection handles memory deallocation?",
+          keywords: ["heap", "stack", "garbage", "memory", "deallocation", "reference", "pointer", "object", "primitive"]
+        },
+        {
+          q: "Explain how multithreading works in Java, the difference between Process and Thread, and how synchronized blocks prevent race conditions.",
+          keywords: ["process", "thread", "race", "synchronized", "memory", "concurrency", "lock", "execution"]
+        },
+        {
+          q: "What are the core principles of OOPs (Object-Oriented Programming)? Explain Polymorphism and Inheritance with real-world examples.",
+          keywords: ["encapsulation", "abstraction", "inheritance", "polymorphism", "class", "object", "override", "overload"]
+        }
+      ],
+      stage3: [
+        {
+          q: "Write a function in Java or JavaScript that takes an array of integers and returns the first non-repeating element. Use the code editor below.",
+          keywords: ["function", "for", "while", "return", "map", "set", "arr", "count", "if", "let", "const", "int"]
+        },
+        {
+          q: "Write a function to check if a string is a valid palindrome, ignoring spaces and non-alphanumeric characters.",
+          keywords: ["function", "return", "length", "while", "if", "char", "string", "reverse", "split"]
+        }
+      ],
+      stage4: [
+        {
+          q: "If you were designing a scalable notification reminder service (like your NotiFly project), how would you handle asynchronous deadline triggers for thousands of concurrent users?",
+          keywords: ["async", "queue", "kafka", "redis", "cron", "cache", "event", "scale", "database", "load", "api"]
+        },
+        {
+          q: "How would you design a rate-limiter for a public REST API to prevent abuse from single clients?",
+          keywords: ["rate", "limit", "token", "bucket", "redis", "ip", "request", "api", "middleware", "gateway"]
+        }
+      ]
+    };
+
+    let activeQuestions = [];
+
+    function openSetupModal(planName) {
+      if (planName) {
+        candidate.plan = planName;
+        document.getElementById('selected-plan-display').innerText = planName;
+      }
+      document.getElementById('setup-modal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+      window.speechSynthesis.cancel();
+      if (recognition && isListening) recognition.stop();
+    }
+
+    function startInterviewSession(e) {
+      e.preventDefault();
+      candidate.name = document.getElementById('c-name').value;
+      candidate.email = document.getElementById('c-email').value;
+      candidate.role = document.getElementById('c-role').value;
+      candidate.projects = document.getElementById('c-projects').value;
+
+      closeModal('setup-modal');
+
+      const rand1 = questionBank.stage1[Math.floor(Math.random() * questionBank.stage1.length)];
+      const rand2 = questionBank.stage2[Math.floor(Math.random() * questionBank.stage2.length)];
+      const rand3 = questionBank.stage3[Math.floor(Math.random() * questionBank.stage3.length)];
+      const rand4 = questionBank.stage4[Math.floor(Math.random() * questionBank.stage4.length)];
+
+      activeQuestions = [
+        { title: "Stage 1: HR & Candidate Introduction", type: "text", text: rand1(candidate), keywords: ["project", "developer", "experience", "java", "python", "full stack", "engineering", "student", "built", "code"] },
+        { title: "Stage 2: Core Fundamentals", type: "text", text: rand2.q, keywords: rand2.keywords },
+        { title: "Stage 3: Live Code Sandbox", type: "code", text: rand3.q, keywords: rand3.keywords },
+        { title: "Stage 4: System Design & Scenario", type: "text", text: rand4.q, keywords: rand4.keywords }
+      ];
+
+      document.getElementById('interview-modal').style.display = 'flex';
+      document.getElementById('session-workspace').style.display = 'block';
+      document.getElementById('evaluation-workspace').style.display = 'none';
+      document.getElementById('chat-history').innerHTML = '';
+
+      currentStage = 0;
+      stageScores = [0, 0, 0, 0];
+      stageFeedbacks = ["", "", "", ""];
+      attemptCounts = [1, 1, 1, 1];
+
+      loadStage();
+    }
+
+    function loadStage() {
+      const stageObj = activeQuestions[currentStage];
+      document.getElementById('stage-badge').innerText = stageObj.title;
+
+      document.getElementById('standard-actions').style.display = 'block';
+      document.getElementById('decision-actions').style.display = 'none';
+
+      if (stageObj.type === 'code') {
+        document.getElementById('text-input-wrapper').style.display = 'none';
+        document.getElementById('code-input-wrapper').style.display = 'block';
+        document.getElementById('candidate-code').value = 'function solution(input) {\n  // Write your code logic here\n}';
+      } else {
+        document.getElementById('text-input-wrapper').style.display = 'block';
+        document.getElementById('code-input-wrapper').style.display = 'none';
+        document.getElementById('candidate-reply').value = '';
+      }
+
+      appendChatMessage('ai', stageObj.text);
+      speakText(stageObj.text);
+    }
+
+    function appendChatMessage(sender, text) {
+      const chatBox = document.getElementById('chat-history');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender}`;
+      msgDiv.innerHTML = `<strong>${sender === 'ai' ? '🤖 AI Interviewer:' : '👤 ' + candidate.name + ':'}</strong><p style="margin-top: 0.3rem;">${text}</p>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function speakText(text) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleMic() {
+      const micBtn = document.getElementById('mic-btn');
+      const micStatus = document.getElementById('mic-status');
+
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice recognition is supported on Chrome and Edge. Please type your response.');
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
+        micBtn.innerText = '🎙️ Speak Response';
+        micStatus.innerText = '';
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = function() {
+        isListening = true;
+        micBtn.innerText = '🔴 Listening... Stop';
+        micStatus.innerText = 'Listening to microphone... Speak clearly.';
+      };
+
+      recognition.onresult = function(event) {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        document.getElementById('candidate-reply').value = transcript;
+      };
+
+      recognition.onerror = function() {
+        micStatus.innerText = 'Microphone permission error.';
+        isListening = false;
+        micBtn.innerText = '🎙️ Speak Response';
+      };
+
+      recognition.onend = function() {
+        isListening = false;
+        micBtn.innerText = '🎙️ Speak Response';
+      };
+
+      recognition.start();
+    }
+
+    function submitCandidateResponse() {
+      const currentObj = activeQuestions[currentStage];
+      let userAns = currentObj.type === 'code' ? document.getElementById('candidate-code').value.trim() : document.getElementById('candidate-reply').value.trim();
+
+      if (!userAns) {
+        alert('Please provide an answer before submitting to the interviewer!');
+        return;
+      }
+
+      appendChatMessage('user', userAns);
+      window.speechSynthesis.cancel();
+      if (recognition && isListening) recognition.stop();
+
+      const lowerAns = userAns.toLowerCase();
+      const isGibberish = userAns.length < 15 || /^(asdf|qwerty|idk|no|abc|test|123)+$/i.test(lowerAns);
+
+      let matchedKeywords = 0;
+      currentObj.keywords.forEach(kw => {
+        if (lowerAns.includes(kw)) matchedKeywords++;
+      });
+
+      let score = 0;
+
+      if (isGibberish) {
+        score = 10;
+      } else if (matchedKeywords >= 3) {
+        score = Math.min(100, 75 + matchedKeywords * 5);
+      } else if (matchedKeywords >= 1) {
+        score = 55 + matchedKeywords * 8;
+      } else {
+        score = 35;
+      }
+
+      stageScores[currentStage] = score;
+
+      if (score < 65) {
+        let feedbackMsg = "";
+        if (isGibberish) {
+          feedbackMsg = `Your answer appears to be invalid or incomplete. As an interviewer, I need a detailed explanation. Would you like to try again or proceed?`;
+        } else {
+          feedbackMsg = `Your answer covers parts of the question, but misses core concepts required for ${currentObj.title}. Would you like to try again for a higher score, or move to the next stage?`;
+        }
+
+        stageFeedbacks[currentStage] = `Attempt ${attemptCounts[currentStage]}: Incomplete response (${score}/100). Candidate chose to move forward.`;
+        appendChatMessage('ai', feedbackMsg);
+        speakText(feedbackMsg);
+
+        document.getElementById('standard-actions').style.display = 'none';
+        document.getElementById('decision-actions').style.display = 'flex';
+      } else {
+        const feedbackMsg = `Good answer! You demonstrated solid understanding of the concepts. Moving to the next stage...`;
+        stageFeedbacks[currentStage] = `Attempt ${attemptCounts[currentStage]}: Strong technical answer (${score}/100).`;
+        appendChatMessage('ai', feedbackMsg);
+        speakText(feedbackMsg);
+
+        setTimeout(() => {
+          proceedToNextStage();
+        }, 1600);
+      }
+    }
+
+    function retryCurrentQuestion() {
+      attemptCounts[currentStage]++;
+      appendChatMessage('ai', `No problem! Take your time to refine your answer and click submit when ready.`);
+      speakText(`No problem! Take your time to refine your answer.`);
+      
+      document.getElementById('standard-actions').style.display = 'block';
+      document.getElementById('decision-actions').style.display = 'none';
+    }
+
+    function proceedToNextStage() {
+      currentStage++;
+      if (currentStage < activeQuestions.length) {
+        loadStage();
+      } else {
+        showEvaluationReport();
+      }
+    }
+
+    function showEvaluationReport() {
+      document.getElementById('session-workspace').style.display = 'none';
+      document.getElementById('evaluation-workspace').style.display = 'block';
+      document.getElementById('eval-candidate-name').innerText = `Candidate: ${candidate.name} | Role: ${candidate.role} | Plan: ${candidate.plan}`;
+
+      const avgScore = Math.round(stageScores.reduce((a, b) => a + b, 0) / stageScores.length);
+      document.getElementById('overall-score').innerText = `${avgScore} / 100`;
+
+      const verdictEl = document.getElementById('hire-verdict');
+      if (avgScore >= 80) {
+        verdictEl.innerText = "Strongly Recommended";
+        verdictEl.style.color = "var(--success)";
+      } else if (avgScore >= 60) {
+        verdictEl.innerText = "Consider for Hire (With Training)";
+        verdictEl.style.color = "var(--warning)";
+      } else {
+        verdictEl.innerText = "Needs Further Preparation";
+        verdictEl.style.color = "var(--error)";
+      }
+
+      const listContainer = document.getElementById('eval-breakdown-list');
+      listContainer.innerHTML = '';
+
+      activeQuestions.forEach((stg, i) => {
+        const item = document.createElement('p');
+        item.style.marginBottom = '0.5rem';
+        item.innerHTML = `• <strong>${stg.title}:</strong> Score: <span style="color: ${stageScores[i] >= 65 ? 'var(--success)' : 'var(--error)'}; font-weight:700;">${stageScores[i]}/100</span> — ${stageFeedbacks[i]}`;
+        listContainer.appendChild(item);
+      });
+    }
+  </script>
+</body>
+</html>
